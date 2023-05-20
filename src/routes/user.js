@@ -4,7 +4,16 @@ const userSchema = require("../models/User");
 const router = express.Router();
 
 // create user
-router.post("/users", (req, res) => {
+router.post("/users", async (req, res) => {
+	const username = req.body.username;
+	const existingUser = await userSchema.findOne({ username: username });
+
+	if (existingUser) {
+		return res
+			.status(409)
+			.json({ message: "El nombre de usuario ya está en uso." });
+	}
+
 	const user = userSchema(req.body);
 	user
 		.save()
