@@ -31,6 +31,7 @@ router.get("/users/:userId/projects", (req, res) => {
 // get a project for a user
 router.get("/users/:userId/projects/:projectId", (req, res) => {
 	const { userId, projectId } = req.params;
+
 	userSchema
 		.findById(userId, "projects")
 		.populate({
@@ -38,7 +39,7 @@ router.get("/users/:userId/projects/:projectId", (req, res) => {
 			match: { _id: projectId },
 		})
 		.then((user) => {
-			const project = user.projects[0];
+			const project = user.projects.find((p) => p._id.equals(projectId));
 			if (!project) {
 				return res.json({ message: "Project not found" });
 			}
@@ -69,14 +70,13 @@ router.delete("/users/:userId/projects/:projectId", (req, res) => {
 // update a project for a user
 router.put("/users/:userId/projects/:projectId", (req, res) => {
 	const { userId, projectId } = req.params;
-	const { name, description } = req.body;
+	const { code } = req.body;
 	userSchema
 		.findOneAndUpdate(
 			{ _id: userId, "projects._id": projectId },
 			{
 				$set: {
-					"projects.$.name": name,
-					"projects.$.description": description,
+					"projects.$.code": code,
 				},
 			},
 			{ new: true }
