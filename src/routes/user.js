@@ -30,10 +30,10 @@ router.get("/users", (req, res) => {
 });
 
 // get a user
-router.get("/users/:id", (req, res) => {
-	const { id } = req.params;
+router.get("/users/:username", (req, res) => {
+	const { username } = req.params;
 	userSchema
-		.findById(id)
+		.findOne({ username })
 		.then((data) => res.json(data))
 		.catch((error) => res.json({ message: error }));
 });
