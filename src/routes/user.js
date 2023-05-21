@@ -1,7 +1,25 @@
 const express = require("express");
 const userSchema = require("../models/User");
-
+const bcrypt = require("bcrypt");
 const router = express.Router();
+
+router.post("/login", async (req, res) => {
+	const { username, password } = req.body;
+
+	const user = await userSchema.findOne({ username: username });
+
+	if (!user) {
+		return res.status(401).json({ message: "Invalid credentials" });
+	}
+
+	// Compare the user's password with the hashed password stored in the database
+	const isPasswordValid = await bcrypt.compare(password, user.password);
+
+	if (!isPasswordValid) {
+		return res.status(401).json({ message: "Invalid credentials" });
+	}
+	return res.status(201).json({ message: "Valid credentials" });
+});
 
 // create user
 router.post("/users", async (req, res) => {
@@ -14,7 +32,16 @@ router.post("/users", async (req, res) => {
 			.json({ message: "El nombre de usuario ya está en uso." });
 	}
 
-	const user = userSchema(req.body);
+	// Hash the user's password before saving it to the database
+	const saltRounds = 10;
+	const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+
+	const user = userSchema({
+		name: req.body.name,
+		username: username,
+		password: hashedPassword,
+	});
+
 	user
 		.save()
 		.then((data) => res.json(data))
