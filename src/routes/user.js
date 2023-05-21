@@ -12,10 +12,7 @@ router.post("/login", async (req, res) => {
 		return res.status(401).json({ message: "Invalid credentials" });
 	}
 
-	// Compare the user's password with the hashed password stored in the database
-	const isPasswordValid = await bcrypt.compare(password, user.password);
-
-	if (!isPasswordValid) {
+	if (password !== user.password) {
 		return res.status(401).json({ message: "Invalid credentials" });
 	}
 	return res.status(201).json({ message: "Valid credentials" });
@@ -33,13 +30,11 @@ router.post("/users", async (req, res) => {
 	}
 
 	// Hash the user's password before saving it to the database
-	const saltRounds = 10;
-	const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
 
 	const user = userSchema({
 		name: req.body.name,
 		username: username,
-		password: hashedPassword,
+		password: req.body.password,
 	});
 
 	user
