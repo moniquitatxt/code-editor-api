@@ -51,18 +51,14 @@ router.get("/users/:userId/projects/:projectId", (req, res) => {
 // delete a project for a user
 router.delete("/users/:userId/projects/:projectId", (req, res) => {
 	const { userId, projectId } = req.params;
+
 	userSchema
-		.findByIdAndUpdate(
-			userId,
-			{ $pull: { projects: projectId } },
-			{ new: true }
-		)
-		.then((user) => {
-			const project = user.projects.find((p) => p._id.toString() === projectId);
-			if (!project) {
+		.updateOne({ _id: userId }, { $pull: { projects: { _id: projectId } } })
+		.then((result) => {
+			if (result.nModified === 0) {
 				return res.json({ message: "Project not found" });
 			}
-			res.json(project);
+			res.json({ message: "Project removed successfully" });
 		})
 		.catch((error) => res.json({ message: error }));
 });
